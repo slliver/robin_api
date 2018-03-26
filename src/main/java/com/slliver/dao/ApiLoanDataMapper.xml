@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.slliver.dao.ApiLoanDataMapper">
+    <resultMap type="com.slliver.entity.ApiLoanData" id="loanDataMap" extends="com.slliver.base.dao.LoanDataMapper.BaseResultMap">
+        <result column="http_url" property="httpUrl" jdbcType="VARCHAR" />
+    </resultMap>
+    <select id="selectListByPage" parameterType="com.slliver.base.domain.BaseSearchCondition" resultMap="loanDataMap">
+      SELECT
+        l.pkid,
+        l.logo_pkid,
+        l.org_name,
+        l.des,
+        l.loan_amount,
+        l.loan_time,
+        l.monthly_interest_rate,
+        l.day_interest_rate,
+        l.pass_rate,
+        l.fastest_speed,
+        l.total_apply,
+        l.label,
+        l.banner_pkid,
+        r.url AS http_url
+    FROM
+        loan_data l
+    LEFT JOIN resource r ON l.logo_pkid = r.pkid
+    ORDER BY
+        l.modify_time DESC
+    </select>
+</mapper>

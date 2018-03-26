@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.slliver.base.dao.IndexMessageMapper" >
+  <resultMap id="BaseResultMap" type="com.slliver.base.entity.IndexMessage" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="pkid" property="pkid" jdbcType="CHAR" />
+    <result column="total_num" property="totalNum" jdbcType="INTEGER" />
+    <result column="today_num" property="todayNum" jdbcType="INTEGER" />
+    <result column="loan_num" property="loanNum" jdbcType="INTEGER" />
+    <result column="reserved1" property="reserved1" jdbcType="VARCHAR" />
+    <result column="reserved2" property="reserved2" jdbcType="VARCHAR" />
+    <result column="flag_sort" property="flagSort" jdbcType="SMALLINT" />
+    <result column="flag_delete" property="flagDelete" jdbcType="SMALLINT" />
+    <result column="flag_version" property="flagVersion" jdbcType="BIGINT" />
+    <result column="make_user" property="makeUser" jdbcType="CHAR" />
+    <result column="make_time" property="makeTime" jdbcType="TIMESTAMP" />
+    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+</mapper>
