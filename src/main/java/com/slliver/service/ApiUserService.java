@@ -5,10 +5,10 @@ import com.slliver.base.domain.BaseSearchCondition;
 import com.slliver.base.service.BaseService;
 import com.slliver.common.Constant;
 import com.slliver.common.domain.UserToken;
+import com.slliver.common.domain.UserValidate;
 import com.slliver.common.paging.PageWapper;
 import com.slliver.common.utils.*;
 import com.slliver.dao.ApiUserMapper;
-import com.slliver.entity.ApiLoanData;
 import com.slliver.entity.ApiUser;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -33,6 +33,8 @@ public class ApiUserService extends BaseService<ApiUser> {
     @Autowired
     private ApiUserMapper mapper;
     @Autowired
+    private ApiUserService userService;
+    @Autowired
     private ApiSmsCodeService smsCodeService;
 
     public PageWapper<ApiUser> selectListByPage(BaseSearchCondition condition) {
@@ -48,7 +50,12 @@ public class ApiUserService extends BaseService<ApiUser> {
         return new PageWapper<>(list);
     }
 
-    public UserToken save(String phone) {
+    /**
+     * 用户注册
+     * @param phone
+     * @return
+     */
+    public UserValidate save(String phone) {
         String token = "";
         ApiUser user = new ApiUser();
         String pkid = UuidUtil.get32UUID();
@@ -72,8 +79,8 @@ public class ApiUserService extends BaseService<ApiUser> {
         user.setExpireTime(expireTime);
         this.insert(user);
 
-        UserToken userToken = new UserToken(pkid, token);
-        return userToken;
+        UserValidate validate = new UserValidate(pkid, token);
+        return validate;
     }
 
     /**
@@ -89,6 +96,61 @@ public class ApiUserService extends BaseService<ApiUser> {
         example.createCriteria().andEqualTo("phone", phone);
         List<ApiUser> list = this.selectByExample(example);
         return CollectionUtils.isNotEmpty(list) ? list.get(0) : null;
+    }
+
+    /**
+     * 验证用户注册
+     */
+    public UserValidate validateRegister(final String phone, final String code) {
+        UserValidate validate = new UserValidate();
+
+        UserValidate validateNotNull = this.validateNotNull(phone, code);
+        if (!Objects.equals(Constant.SUCCESS, validateNotNull.getMessage())) {
+            validate.setMessage(validateNotNull.getMessage());
+            return validate;
+        }
+
+        ApiUser user = this.userService.selectByPhone(phone);
+        if (user != null) {
+            validate.setMessage("手机号码已经注册，请直接登录");
+            validate.setToken(user.getAccessToken());
+            return validate;
+        }
+
+        String message = this.smsCodeService.selectByPhoneAndCode(phone.trim(), code.trim());
+        if (!Objects.equals(Constant.SUCCESS, message)) {
+            validate.setMessage(message);
+            return validate;
+        }
+
+        validate = this.userService.save(phone);
+        if (StringUtils.isBlank(validate.getToken())) {
+            validate.setMessage("注册失败");
+            return validate;
+        }
+
+        validate.setMessage(Constant.SUCCESS);
+        return validate;
+    }
+
+
+    /**
+     * 验证手机号码 验证码是否为控
+     */
+    private UserValidate validateNotNull(final String phone, final String code) {
+        UserValidate validate = new UserValidate();
+        if (StringUtils.isBlank(phone)) {
+            validate.setMessage("手机号码不能为空");
+            return validate;
+        }
+
+        if (StringUtils.isBlank(code)) {
+            validate.setMessage("验证码不能为空");
+            return validate;
+        }
+
+        validate.setMessage(Constant.SUCCESS);
+        return validate;
     }
 
     /**
@@ -129,8 +191,7 @@ public class ApiUserService extends BaseService<ApiUser> {
             userToken.setMessage(Constant.SUCCESS);
             userToken.setToken(token);
             return userToken;
-        }
-        else{
+        } else {
 //            return Constant.SUCCESS + "_" + token;
             userToken.setMessage(Constant.SUCCESS);
             userToken.setToken(token);
