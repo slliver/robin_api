@@ -133,43 +133,37 @@ public class ApiUserService extends BaseService<ApiUser> {
         return validate;
     }
 
-
     /**
-     * 验证手机号码 验证码是否为控
+     * 验证用户手机号码登录
      */
-    private UserValidate validateNotNull(final String phone, final String code) {
+    public UserValidate validatePhoneLogin(final String phone, final String code){
         UserValidate validate = new UserValidate();
-        if (StringUtils.isBlank(phone)) {
-            validate.setMessage("手机号码不能为空");
+        UserValidate validateNotNull = this.validateNotNull(phone, code);
+        if (!Objects.equals(Constant.SUCCESS, validateNotNull.getMessage())) {
+            validate.setMessage(validateNotNull.getMessage());
             return validate;
         }
 
-        if (StringUtils.isBlank(code)) {
-            validate.setMessage("验证码不能为空");
-            return validate;
-        }
-
-        validate.setMessage(Constant.SUCCESS);
-        return validate;
+        return userService.phoneLogin(phone, code);
     }
 
     /**
      * 手机号验证码登录并返回token
      */
-    public UserToken phoneLogin(String phone, String code) {
-        UserToken userToken = new UserToken();
+    public UserValidate phoneLogin(String phone, String code) {
+        UserValidate validate = new UserValidate();
         ApiUser user = this.selectByPhone(phone);
         if (user == null) {
             // 没有注册
-            userToken.setMessage("输入的手机号码没有注册");
-            return userToken;
+            validate.setMessage("输入的手机号码没有注册");
+            return validate;
         }
 
         // 用户已经注册，验证验证码是否正确
         String result = smsCodeService.selectByPhoneAndCode(phone, code);
         if (!Objects.equals(Constant.SUCCESS, result)) {
-            userToken.setMessage(result);
-            return userToken;
+            validate.setMessage(result);
+            return validate;
         }
 
         // 构建用户token,并返回
@@ -188,15 +182,35 @@ public class ApiUserService extends BaseService<ApiUser> {
             user.setExpireTime(expireTime);
             update(user);
 //            return Constant.SUCCESS + "_" + token;
-            userToken.setMessage(Constant.SUCCESS);
-            userToken.setToken(token);
-            return userToken;
+            validate.setMessage(Constant.SUCCESS);
+            validate.setToken(token);
+            return validate;
         } else {
 //            return Constant.SUCCESS + "_" + token;
-            userToken.setMessage(Constant.SUCCESS);
-            userToken.setToken(token);
-            return userToken;
+            validate.setMessage(Constant.SUCCESS);
+            validate.setToken(token);
+            return validate;
         }
+    }
+
+
+    /**
+     * 验证手机号码 验证码是否为控
+     */
+    public UserValidate validateNotNull(final String phone, final String code) {
+        UserValidate validate = new UserValidate();
+        if (StringUtils.isBlank(phone)) {
+            validate.setMessage("手机号码不能为空");
+            return validate;
+        }
+
+        if (StringUtils.isBlank(code)) {
+            validate.setMessage("验证码不能为空");
+            return validate;
+        }
+
+        validate.setMessage(Constant.SUCCESS);
+        return validate;
     }
 
     public ApiUser selectByUserName(String userName) {
