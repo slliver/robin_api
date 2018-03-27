@@ -128,7 +128,7 @@ public final class Constant {
     /**
      * 图片服务器地址
      */
-    public static final String SERVER_IMAGE_ADDRESS = "http://121.40.214.46:8089";
+    public static final String SERVER_IMAGE_ADDRESS = "http://robin.slliver.com:8089";
 
 
     /**
