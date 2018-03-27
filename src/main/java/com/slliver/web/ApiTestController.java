@@ -78,32 +78,18 @@ public class ApiTestController extends ApiBaseController {
         return result;
     }
 
-
+    /**
+     * 用户手机号码登录
+     * @param phone
+     * @param code
+     * @return
+     */
     @PostMapping(value = "/phoneLogin")
     public ApiRichResult phoneLogin(@RequestParam("phone") String phone, @RequestParam("code") String code) {
         ApiRichResult result = new ApiRichResult();
-        UserToken userToken = null;
-        if (StringUtils.isBlank(phone)) {
-            userToken = new UserToken();
-            userToken.setMessage("手机号码不能为空");
-            result.setSucceed(userToken, "接口调用成功");
-            return result;
-        }
-        if (StringUtils.isBlank(code)) {
-            userToken = new UserToken();
-            userToken.setMessage("验证码不能为空");
-            result.setSucceed(userToken, "接口调用成功");
-            return result;
-        }
-
-        userToken = userService.phoneLogin(phone, code);
-        if (Objects.equals(userToken.getMessage(), Constant.SUCCESS)) {
-            result.setSucceed(userToken, "接口调用成功");
-            return result;
-        } else {
-            result.setFail(userToken, "接口调用失败");
-            return result;
-        }
+        UserValidate validate = this.userService.validatePhoneLogin(phone, code);
+        result.setSucceed(validate, "接口调用成功");
+        return result;
     }
 
     @Autowired
