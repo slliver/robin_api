@@ -5,6 +5,7 @@ import com.slliver.base.domain.BaseSearchCondition;
 import com.slliver.common.Constant;
 import com.slliver.common.domain.ApiRichResult;
 import com.slliver.common.domain.UserToken;
+import com.slliver.common.domain.UserValidate;
 import com.slliver.common.paging.PageWapper;
 import com.slliver.common.utils.CipherUtil;
 import com.slliver.common.utils.IpAddressUtil;
@@ -56,50 +57,17 @@ public class ApiTestController extends ApiBaseController {
         return result;
     }
 
-
+    /**
+     * 用户注册
+     * @param phone
+     * @param code
+     * @return
+     */
     @RequestMapping(value = "/register", method = {RequestMethod.POST})
     public ApiRichResult register(@RequestParam("phone") String phone, @RequestParam("code") String code) {
         ApiRichResult result = new ApiRichResult();
-        UserToken userToken = null;
-        if (StringUtils.isBlank(phone)) {
-            userToken = new UserToken();
-            userToken.setMessage("手机号码不能为空");
-            result.setSucceed(userToken, "接口调用成功");
-            return result;
-        }
-
-        ApiUser user = this.userService.selectByPhone(phone);
-        if (user != null) {
-            userToken = new UserToken();
-            userToken.setToken(user.getAccessToken());
-            userToken.setMessage("手机号码已经注册，请直接登录");
-            result.setSucceed(userToken, "接口调用成功");
-            return result;
-        }
-
-        if (StringUtils.isBlank(code)) {
-            userToken = new UserToken();
-            userToken.setMessage("验证码不能为空");
-            result.setSucceed(userToken, "接口调用成功");
-            return result;
-        }
-
-        String message = this.smsCodeService.selectByPhoneAndCode(phone.trim(), code.trim());
-        if (!Objects.equals(Constant.SUCCESS, message)) {
-            result.setFailMsg(message);
-            return result;
-        }
-
-        userToken = this.userService.save(phone);
-        if (StringUtils.isBlank(userToken.getToken())) {
-            userToken = new UserToken();
-            userToken.setMessage("注册失败");
-            result.setSucceed(userToken, "接口调用成功");
-            return result;
-        }
-
-        userToken.setMessage(Constant.SUCCESS);
-        result.setSucceed(userToken, "接口调用成功");
+        UserValidate validate = this.userService.validateRegister(phone, code);
+        result.setSucceed(validate, "接口调用成功");
         return result;
     }
 
