@@ -21,8 +21,8 @@ import java.util.*;
 public class SmsUtil {
     private final static Logger logger = LoggerFactory.getLogger(SmsUtil.class);
 
-    // 验证码过期时间10分钟
-    public static final int CODE_EXPIRE_MINUTE = 10;
+    // 验证码过期时间5分钟
+    public static final int CODE_EXPIRE_MINUTE = 5;
 
     /**
      * 随机生成4位小写验证码
@@ -179,7 +179,7 @@ public class SmsUtil {
         params.put("seed", seed);
         params.put("key", getKey(PASSWORD, seed));
         params.put("dest", phone);
-        params.put("content", "[" + SIGN + "] 您的验证码是" + code + "，有效时间5分钟。");
+        params.put("content", "[" + SIGN + "] 您的验证码是" + code + "，有效时间"+CODE_EXPIRE_MINUTE+"分钟。");
         return params;
     }
 }

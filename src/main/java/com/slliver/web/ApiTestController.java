@@ -45,15 +45,10 @@ public class ApiTestController extends ApiBaseController {
     @GetMapping(value = "/verificationCode")
     public ApiRichResult getVerificationCode(@RequestParam("phone") String phone) {
         ApiRichResult result = new ApiRichResult();
-        if (StringUtils.isBlank(phone)) {
-            result.setFailMsg("手机号码不能为空~");
-            return result;
-        }
-
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         String ipAddress = IpAddressUtil.getIpAddress(request);
-        UserToken sendResult = this.smsCodeService.updateSendCode(phone, ipAddress);
-        result.setSucceed(sendResult, "接口调用成功");
+        UserValidate validate = this.smsCodeService.validateGetCode(phone, ipAddress);
+        result.setSucceed(validate, "接口调用成功");
         return result;
     }
 

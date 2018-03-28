@@ -5,12 +5,14 @@ import com.slliver.common.Constant;
 import com.slliver.common.DateConstant;
 import com.slliver.common.constant.SmsContant;
 import com.slliver.common.domain.UserToken;
+import com.slliver.common.domain.UserValidate;
 import com.slliver.common.utils.DateUtil;
 import com.slliver.common.utils.SmsUtil;
 import com.slliver.dao.ApiSmsCodeMapper;
 import com.slliver.entity.ApiSmsCode;
 import com.sun.org.apache.regexp.internal.RE;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -34,8 +37,84 @@ public class ApiSmsCodeService extends BaseService<ApiSmsCode> {
     private ApiSmsCodeMapper mapper;
 
     /**
+     * 验证用户通过手机获取验证码
+     */
+    public UserValidate validateGetCode(String phone, String ipAddress) {
+        UserValidate result = validateNotNull(phone);
+        if(!Objects.equals(Constant.SUCCESS,result.getMessage())){
+            return result;
+        }
+
+        // 获取当前手机号码当前日期获取验证码的次数
+        List<ApiSmsCode> list = this.selectListByPhone(phone, getCurrentDateString(DateConstant.YYYY_MM_DD));
+        if (CollectionUtils.isEmpty(list)) {
+            // 当日没有获取过
+            String code = SmsUtil.generateRandomCode();
+            save(phone, code, ipAddress);
+
+            // 发送验证码
+            SmsUtil.send(phone, code);
+
+            result.setCode(code);
+            result.setMessage(Constant.SUCCESS);
+            return result;
+        }else{
+            // 已经发送过，需要进行校验当前日期已经获取过验证码
+            ApiSmsCode smsCode = list.get(0);
+            int count = smsCode.getCount();
+            if (count > (SmsContant.CODE_MAX_RECEIVE_COUNT - 1)) {
+                // 不能接收，给予提示
+                result.setCode(smsCode.getCode());
+                result.setMessage("max_error, 您今日获取的验证码次数已经超过最大次数，" + SmsContant.CODE_MAX_RECEIVE_COUNT + "次");
+                return result;
+            }
+
+            // 验证码是不是在有效期
+            String code = "";
+            Long nowTime = System.currentTimeMillis();
+            Long expireTime = smsCode.getExpireTime();
+            if (nowTime > expireTime) {
+                // 验证码过期了，重新获取验证码
+                code = SmsUtil.generateRandomCode();
+                AtomicInteger integer = new AtomicInteger(count);
+                Date expireDate = DateUtils.addMinutes(DateUtil.getCurrentDate(), SmsUtil.CODE_EXPIRE_MINUTE);
+                smsCode.setExpireDate(expireDate);
+                smsCode.setExpireTime(expireDate.getTime());
+                smsCode.setCount(integer.addAndGet(1));
+                smsCode.setCode(code);
+                this.update(smsCode);
+
+                // 和短信平台进行对接，发送验证码给客户 phone + code
+                SmsUtil.send(phone, code);
+
+                result.setCode(code);
+                result.setMessage(Constant.SUCCESS);
+                return result;
+            } else {
+                code = smsCode.getCode();
+                // 验证码可用，不用发送验证码，直接告诉验证码可用
+                result.setCode(code);
+                result.setMessage("code_valid, 验证码已经发送，请使用发送的验证码["+code+"]");
+                return result;
+            }
+        }
+    }
+
+    public UserValidate validateNotNull(final String phone) {
+        UserValidate validate = new UserValidate();
+        if (StringUtils.isBlank(phone)) {
+            validate.setMessage("手机号码不能为空");
+            return validate;
+        }
+
+        validate.setMessage(Constant.SUCCESS);
+        return validate;
+    }
+
+    /**
      * 用户获取验证码
      */
+    @Deprecated
     public UserToken updateSendCode(String phone, String ipAddress) {
         UserToken result = new UserToken();
         String sendResult = "success";
