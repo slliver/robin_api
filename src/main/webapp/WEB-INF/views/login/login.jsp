@@ -44,14 +44,16 @@
     </div>
     <!-- /.login-logo -->
     <div class="login-box-body">
-        <p class="login-box-msg">Sign in to start your session</p>
+        <p class="login-box-msg">
+            &nbsp;
+        </p>
         <form action="#" method="post">
             <div class="form-group has-feedback">
-                <input type="text" class="form-control" name="userName" id="userName" placeholder="请输入用户名" value="admin"/>
+                <input type="text" class="form-control" name="userName" id="userName" placeholder="请输入用户名" value=""/>
                 <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
             </div>
             <div class="form-group has-feedback">
-                <input type="password" class="form-control" name="password" id="password" placeholder="请输入密码" value="123456"/>
+                <input type="password" class="form-control" name="password" id="password" placeholder="请输入密码" value=""/>
                 <span class="glyphicon glyphicon-lock form-control-feedback"></span>
             </div>
             <div class="row">
@@ -84,7 +86,16 @@
 
 <script src="${ctx}/static/js/common/jquery/jquery.md5.js"></script>
 <script>
+    var btnLogin = "btn-login";
     $(function () {
+
+        $(document).keydown(function (event) {
+            event = event ? event : window.event;
+            if (event.keyCode === 13) {
+                $("#" + btnLogin).trigger("click");
+            }
+        });
+
         $("#btn-login").click(function () {
             var userName = $("#userName").val();
             var userPassword = $("#password").val();
