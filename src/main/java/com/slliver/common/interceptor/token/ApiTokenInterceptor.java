@@ -2,6 +2,7 @@ package com.slliver.common.interceptor.token;
 
 import com.slliver.common.Constant;
 import com.slliver.common.domain.UserToken;
+import com.slliver.common.exception.RQException;
 import com.slliver.common.utils.TokenUtil;
 import com.slliver.token.RedisTokenManager;
 import org.apache.commons.collections.CollectionUtils;
@@ -9,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
@@ -42,7 +44,7 @@ public class ApiTokenInterceptor extends HandlerInterceptorAdapter {
      * 请求进入前获取request中header中token信息，并解析成服务器需要的信息
      */
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         // 默认不需要token可以访问的，比如获取验证码，登录等操作
         String requestUrl = request.getRequestURI();
         for (String url : allowApiUrls) {
@@ -87,11 +89,18 @@ public class ApiTokenInterceptor extends HandlerInterceptorAdapter {
         }
 
         /**
-        if (!redisTemplate.hasKey(token)) {
-            // 如果token验证没问题，放入缓存
-            redisTemplate.opsForValue().set(token, userPkid);
+        RedisConnectionFactory factory = redisTemplate.getConnectionFactory();
+        if (factory.getConnection() == null) {
+            // redis服务调用失败,抛出对应异常
+            throw new RQException("redis 服务异常创建RedisConnectionFactory失败，请检查");
+        } else {
+            if (!redisTemplate.hasKey(token)) {
+                // 如果token验证没问题，放入缓存
+                redisTemplate.opsForValue().set(token, userPkid);
+            }
         }
         **/
+
         // 验证通过
         return true;
     }
@@ -113,12 +122,7 @@ public class ApiTokenInterceptor extends HandlerInterceptorAdapter {
             return false;
         }
 
-        if (Objects.equals(TokenUtil.decode(sercetKey), Constant.SERCET_KEY)) {
-            // 秘钥不对
-            return false;
-        }
-
-        return true;
+        return !Objects.equals(TokenUtil.decode(sercetKey), Constant.SERCET_KEY);
     }
 
 
