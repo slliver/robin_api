@@ -16,9 +16,11 @@ import java.util.Map;
  */
 public class ResourceUtil {
 
-    public static final String UPLOAD_ROOT_PATH = "d:\\robin\\upload";
-    public static final String SERVER_PATH = "d:\\robin\\upload";
+    //public static final String UPLOAD_ROOT_PATH = "d:\\robin\\upload";
+    //public static final String SERVER_PATH = "d:\\robin\\upload";
 
+    public static final String UPLOAD_ROOT_PATH = "/home/robin/upload";
+    public static final String SERVER_PATH = "/home/robin/upload";
 
     /**
      * 获取原始资源文件名并保存，如果文件长度大于数据库指定文件存储空间，进行处理
@@ -117,7 +119,7 @@ public class ResourceUtil {
     }
 
     public static String getFolder(String rootPath, String module) {
-        StringBuffer folder = new StringBuffer("");
+        StringBuffer folder = new StringBuffer();
         Date date = DateUtil.getCurrentDate();
         folder.append(module);
         folder.append("/");
