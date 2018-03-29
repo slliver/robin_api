@@ -4,6 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.slliver.base.domain.BaseSearchCondition;
 import com.slliver.base.service.BaseService;
 import com.slliver.common.Constant;
+import com.slliver.common.ValidationConstant;
 import com.slliver.common.domain.UserToken;
 import com.slliver.common.domain.UserValidate;
 import com.slliver.common.paging.PageWapper;
@@ -83,13 +84,6 @@ public class ApiUserService extends BaseService<ApiUser> {
         return validate;
     }
 
-    /**
-     * 用户名密码登录
-     */
-    public ApiUser login(String userName, String password) {
-        ApiUser user = null;
-        return user;
-    }
 
     public ApiUser selectByPhone(String phone) {
         Example example = new Example(ApiUser.class);
@@ -104,32 +98,41 @@ public class ApiUserService extends BaseService<ApiUser> {
     public UserValidate validateRegister(final String phone, final String code) {
         UserValidate validate = new UserValidate();
 
-        UserValidate validateNotNull = this.validateNotNull(phone, code);
-        if (!Objects.equals(Constant.SUCCESS, validateNotNull.getMessage())) {
-            validate.setMessage(validateNotNull.getMessage());
+        // 验证空值
+        String statusCodeNull = this.validateNotNull(phone, code);
+        if (!Objects.equals(ValidationConstant.SUCCESS, statusCodeNull)) {
+            validate.setStatusCode(statusCodeNull);
+            validate.setMessage(ValidationConstant.getStatusCodeMessage(statusCodeNull));
             return validate;
         }
 
+        // 验证验证码是否有效
+        String statusCode = this.smsCodeService.selectByPhoneAndCode(phone.trim(), code.trim());
+        if (!Objects.equals(ValidationConstant.SUCCESS, statusCode)) {
+            validate.setStatusCode(statusCode);
+            validate.setMessage(ValidationConstant.getStatusCodeMessage(statusCode));
+            return validate;
+        }
+
+        // 验证手机号码是否已经注册
         ApiUser user = this.userService.selectByPhone(phone);
         if (user != null) {
-            validate.setMessage("手机号码已经注册，请直接登录");
+            validate.setStatusCode(ValidationConstant.PHOME_HAS_REGISTER);
+            validate.setMessage(ValidationConstant.getStatusCodeMessage(ValidationConstant.PHOME_HAS_REGISTER));
             validate.setToken(user.getAccessToken());
             return validate;
         }
 
-        String message = this.smsCodeService.selectByPhoneAndCode(phone.trim(), code.trim());
-        if (!Objects.equals(Constant.SUCCESS, message)) {
-            validate.setMessage(message);
-            return validate;
-        }
-
         validate = this.userService.save(phone);
+        // 注册失败
         if (StringUtils.isBlank(validate.getToken())) {
-            validate.setMessage("注册失败");
+            validate.setStatusCode(ValidationConstant.REGISTER_FAIL);
+            validate.setMessage(ValidationConstant.getStatusCodeMessage(ValidationConstant.REGISTER_FAIL));
             return validate;
         }
 
-        validate.setMessage(Constant.SUCCESS);
+        validate.setStatusCode(ValidationConstant.SUCCESS);
+        validate.setMessage(ValidationConstant.SUCCESS);
         return validate;
     }
 
@@ -138,9 +141,10 @@ public class ApiUserService extends BaseService<ApiUser> {
      */
     public UserValidate validatePhoneLogin(final String phone, final String code){
         UserValidate validate = new UserValidate();
-        UserValidate validateNotNull = this.validateNotNull(phone, code);
-        if (!Objects.equals(Constant.SUCCESS, validateNotNull.getMessage())) {
-            validate.setMessage(validateNotNull.getMessage());
+        String statusCode = this.validateNotNull(phone, code);
+        if (!Objects.equals(ValidationConstant.SUCCESS, statusCode)) {
+            validate.setStatusCode(statusCode);
+            validate.setMessage(ValidationConstant.getStatusCodeMessage(statusCode));
             return validate;
         }
 
@@ -155,14 +159,16 @@ public class ApiUserService extends BaseService<ApiUser> {
         ApiUser user = this.selectByPhone(phone);
         if (user == null) {
             // 没有注册
-            validate.setMessage("输入的手机号码没有注册");
+            validate.setStatusCode(ValidationConstant.PHOME_NOT_REGISTER);
+            validate.setMessage(ValidationConstant.getStatusCodeMessage(ValidationConstant.PHOME_NOT_REGISTER));
             return validate;
         }
 
         // 用户已经注册，验证验证码是否正确
-        String result = smsCodeService.selectByPhoneAndCode(phone, code);
-        if (!Objects.equals(Constant.SUCCESS, result)) {
-            validate.setMessage(result);
+        String statusCode = smsCodeService.selectByPhoneAndCode(phone, code);
+        if (!Objects.equals(ValidationConstant.SUCCESS, statusCode)) {
+            validate.setStatusCode(statusCode);
+            validate.setMessage(ValidationConstant.getStatusCodeMessage(statusCode));
             return validate;
         }
 
@@ -181,13 +187,13 @@ public class ApiUserService extends BaseService<ApiUser> {
             user.setExpireDate(expireDate);
             user.setExpireTime(expireTime);
             update(user);
-//            return Constant.SUCCESS + "_" + token;
-            validate.setMessage(Constant.SUCCESS);
+            validate.setStatusCode(ValidationConstant.SUCCESS);
+            validate.setMessage(ValidationConstant.SUCCESS);
             validate.setToken(token);
             return validate;
         } else {
-//            return Constant.SUCCESS + "_" + token;
-            validate.setMessage(Constant.SUCCESS);
+            validate.setStatusCode(ValidationConstant.SUCCESS);
+            validate.setMessage(ValidationConstant.SUCCESS);
             validate.setToken(token);
             return validate;
         }
@@ -197,20 +203,16 @@ public class ApiUserService extends BaseService<ApiUser> {
     /**
      * 验证手机号码 验证码是否为控
      */
-    public UserValidate validateNotNull(final String phone, final String code) {
-        UserValidate validate = new UserValidate();
+    public String validateNotNull(final String phone, final String code) {
         if (StringUtils.isBlank(phone)) {
-            validate.setMessage("手机号码不能为空");
-            return validate;
+            return ValidationConstant.PHONE_NULL;
         }
 
         if (StringUtils.isBlank(code)) {
-            validate.setMessage("验证码不能为空");
-            return validate;
+            return ValidationConstant.CODE_NULL;
         }
 
-        validate.setMessage(Constant.SUCCESS);
-        return validate;
+        return ValidationConstant.SUCCESS;
     }
 
     public ApiUser selectByUserName(String userName) {

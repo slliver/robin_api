@@ -3,6 +3,7 @@ package com.slliver.service;
 import com.slliver.base.service.BaseService;
 import com.slliver.common.Constant;
 import com.slliver.common.DateConstant;
+import com.slliver.common.ValidationConstant;
 import com.slliver.common.constant.SmsContant;
 import com.slliver.common.domain.UserToken;
 import com.slliver.common.domain.UserValidate;
@@ -40,8 +41,13 @@ public class ApiSmsCodeService extends BaseService<ApiSmsCode> {
      * 验证用户通过手机获取验证码
      */
     public UserValidate validateGetCode(String phone, String ipAddress) {
-        UserValidate result = validateNotNull(phone);
-        if(!Objects.equals(Constant.SUCCESS,result.getMessage())){
+        UserValidate result = new UserValidate();
+
+        // 验证手机号是否有效
+        String phoneStatusCode = validateNotNull(phone);
+        if (!Objects.equals(ValidationConstant.SUCCESS, phoneStatusCode)) {
+            result.setStatusCode(phoneStatusCode);
+            result.setMessage(ValidationConstant.getStatusCodeMessage(phoneStatusCode));
             return result;
         }
 
@@ -56,16 +62,18 @@ public class ApiSmsCodeService extends BaseService<ApiSmsCode> {
             SmsUtil.send(phone, code);
 
             result.setCode(code);
-            result.setMessage(Constant.SUCCESS);
+            result.setStatusCode(ValidationConstant.SUCCESS);
+            result.setMessage(ValidationConstant.getStatusCodeMessage(ValidationConstant.SUCCESS));
             return result;
-        }else{
+        } else {
             // 已经发送过，需要进行校验当前日期已经获取过验证码
             ApiSmsCode smsCode = list.get(0);
             int count = smsCode.getCount();
             if (count > (SmsContant.CODE_MAX_RECEIVE_COUNT - 1)) {
                 // 不能接收，给予提示
                 result.setCode(smsCode.getCode());
-                result.setMessage("max_error, 您今日获取的验证码次数已经超过最大次数，" + SmsContant.CODE_MAX_RECEIVE_COUNT + "次");
+                result.setStatusCode(ValidationConstant.CODE_MAX_COUNT);
+                result.setMessage(ValidationConstant.getStatusCodeMessage(ValidationConstant.CODE_MAX_COUNT));
                 return result;
             }
 
@@ -88,27 +96,27 @@ public class ApiSmsCodeService extends BaseService<ApiSmsCode> {
                 SmsUtil.send(phone, code);
 
                 result.setCode(code);
-                result.setMessage(Constant.SUCCESS);
+                result.setStatusCode(ValidationConstant.SUCCESS);
+                result.setMessage(ValidationConstant.getStatusCodeMessage(ValidationConstant.SUCCESS));
                 return result;
             } else {
                 code = smsCode.getCode();
                 // 验证码可用，不用发送验证码，直接告诉验证码可用
                 result.setCode(code);
-                result.setMessage("code_valid, 验证码已经发送，请使用发送的验证码["+code+"]");
+
+                result.setStatusCode(ValidationConstant.CODE_NOT_EXPIRE);
+                result.setMessage(ValidationConstant.getStatusCodeMessage(ValidationConstant.CODE_NOT_EXPIRE));
                 return result;
             }
         }
     }
 
-    public UserValidate validateNotNull(final String phone) {
-        UserValidate validate = new UserValidate();
+    public String validateNotNull(final String phone) {
         if (StringUtils.isBlank(phone)) {
-            validate.setMessage("手机号码不能为空");
-            return validate;
+            return ValidationConstant.PHONE_NULL;
         }
 
-        validate.setMessage(Constant.SUCCESS);
-        return validate;
+        return ValidationConstant.SUCCESS;
     }
 
     /**
@@ -227,17 +235,19 @@ public class ApiSmsCodeService extends BaseService<ApiSmsCode> {
                 .andEqualTo("makeDate", getCurrentDateString(DateConstant.YYYY_MM_DD));
         List<ApiSmsCode> list = this.selectByExample(example);
         if (CollectionUtils.isEmpty(list)) {
-            return "输入的验证码错误";
+            // 输入的验证码错误
+            return ValidationConstant.CODE_ERROR;
         }
 
         ApiSmsCode smsCode = list.get(0);
         Long nowTime = System.currentTimeMillis();
         Long expireTime = smsCode.getExpireTime();
         if (nowTime > expireTime) {
-            return "输入的验证码已过期，请重新获取验证码";
+            // 输入的验证码已过期，请重新获取验证码
+            return ValidationConstant.CODE_EXPIRE;
         }
 
-        return Constant.SUCCESS;
+        return ValidationConstant.SUCCESS;
     }
 
     public static void main(String[] args) {

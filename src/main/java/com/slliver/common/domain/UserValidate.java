@@ -14,7 +14,14 @@ public class UserValidate implements java.io.Serializable {
     private String userPkid;
     private String token;
     private String sercrtKey;
+    /**
+     * 短信验证码
+     */
     private String code;
+    /**
+     * 验证结果状态码
+     */
+    private String statusCode;
     // 验证后的提示信息
     private String message;
 
@@ -57,6 +64,14 @@ public class UserValidate implements java.io.Serializable {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public String getStatusCode() {
+        return statusCode;
+    }
+
+    public void setStatusCode(String statusCode) {
+        this.statusCode = statusCode;
     }
 
     public String getMessage() {

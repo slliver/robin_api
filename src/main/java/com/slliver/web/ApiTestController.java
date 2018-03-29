@@ -95,7 +95,6 @@ public class ApiTestController extends ApiBaseController {
         ApiRichResult result = new ApiRichResult();
         // 获取用户信息
         String userPkid = TokenUtil.getUserPkid(token);
-        System.out.println(" === >>> " + userPkid);
         PageWapper<ApiLoanData> page = loanDataService.selectListByPage(condition);
         result.setSucceed(page, "接口调用成功, 当前第" + page.getPageNum() + "页");
         return result;
