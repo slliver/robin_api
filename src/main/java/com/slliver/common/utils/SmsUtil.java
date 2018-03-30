@@ -70,7 +70,7 @@ public class SmsUtil {
     public static final String SMS_UTF8_URL = "http://223.223.187.13:8080/eums/sms/utf8/send.do";
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     public static final String COMMAND = "pubMtxRes";
-    public static final String SIGN = "借贷之家";
+    public static final String SIGN = "闪贷宝";
     public static final String LOGIN = "jiedai";
     public static final String PASSWORD = "8rxds9q3";
     private final static String CHARSET_UTF8 = "UTF-8";
