@@ -9,6 +9,7 @@ import com.slliver.dao.ApiLoanDataMapper;
 import com.slliver.entity.ApiBanner;
 import com.slliver.entity.ApiLoanData;
 import com.slliver.entity.ApiLoanDetail;
+import com.slliver.entity.ApiResource;
 import org.apache.commons.beanutils.BeanComparator;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ComparatorUtils;
@@ -37,6 +38,9 @@ public class ApiLoanDataService extends BaseService<ApiLoanData> {
 
     @Autowired
     private LoanDetailService loanDetailService;
+
+    @Autowired
+    private ApiResourceService resourceService;
 
     public PageWapper<ApiLoanData> selectListByPage(BaseSearchCondition condition) {
         Integer pageNum = 0;
@@ -219,7 +223,10 @@ public class ApiLoanDataService extends BaseService<ApiLoanData> {
 
     public ApiLoanData selectLoanDetails(String loanPkid) {
         ApiLoanData loanData = this.selectByPkid(loanPkid);
-        if(loanData != null){
+        if (loanData != null) {
+            // 获取Logo图片地址
+            loanData.setHttpUrl(this.getLogoUrl(loanData.getLogoPkid()));
+
             List<ApiLoanDetail> lsit = this.loanDetailService.selectListByLoanPkid(loanPkid);
             if (CollectionUtils.isEmpty(lsit)) {
                 return loanData;
@@ -249,10 +256,19 @@ public class ApiLoanDataService extends BaseService<ApiLoanData> {
             loanData.setApplyConditions(applyConditions);
             loanData.setReqMaterials(reqMaterials);
             loanData.setEarlyRepayments(earlyRepayments);
+
+
         }
 
         return loanData;
     }
 
+    private String getLogoUrl(String logoPkid) {
+        if (StringUtils.isBlank(logoPkid)) {
+            return "";
+        }
 
+        ApiResource resource = this.resourceService.selectByPkid(logoPkid);
+        return Constant.SERVER_IMAGE_ADDRESS + "/" + resource.getUrl();
+    }
 }
