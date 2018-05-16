@@ -10,11 +10,9 @@ import com.slliver.entity.ApiLoanData;
 import com.slliver.service.ApiCreditCardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -33,12 +31,13 @@ public class ApiCreditCardController extends ApiBaseController<ApiCreditCard> {
     private ApiCreditCardService creditCardService;
 
     @PostMapping(value = "/list")
-    public ApiRichResult list(@RequestHeader("request_token") String token, BaseSearchCondition condition) {
+//    public ApiRichResult list(@RequestHeader("request_token") String token, BaseSearchCondition condition) {
+    public ApiRichResult list(HttpServletRequest request, BaseSearchCondition condition) {
         ApiRichResult result = new ApiRichResult();
         // 获取用户信息,从缓存中获取用户信息
 //        String userPkid = redisTemplate.opsForValue().get(token);
         PageWapper<ApiCreditCard> page = creditCardService.selectListByPage(condition);
-        if(page != null){
+        if (page != null) {
             List<ApiCreditCard> list = page.getList();
             for (ApiCreditCard card : list) {
                 card.setHttpUrl(Constant.SERVER_IMAGE_ADDRESS + "/" + card.getHttpUrl());

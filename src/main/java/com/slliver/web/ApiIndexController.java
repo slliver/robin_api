@@ -42,18 +42,16 @@ public class ApiIndexController extends ApiBaseController {
 
     /**
      * 首页
-     *
-     * @param token
-     * @param condition
-     * @return
      */
     @PostMapping(value = "/index")
-    public ApiRichResult index(@RequestHeader("request_token") String token, BaseSearchCondition condition) {
+//    public ApiRichResult index(@RequestHeader("request_token") String token, BaseSearchCondition condition) {
+    public ApiRichResult index(BaseSearchCondition condition, HttpServletRequest request) {
         ApiRichResult result = new ApiRichResult();
         // 获取用户信息,从缓存中获取用户信息
 //        String userPkid = redisTemplate.opsForValue().get(token);
 //        System.out.println("从缓存中获取用户 pkid === >> " + userPkid);
-        System.out.println("token  === >> " + token);
+        logger.info("从请求中获取token == >> " + request.getAttribute(Constant.REQUEST_TOKEN));
+//        System.out.println("token  === >> " + token);
         PageWapper<ApiLoanData> page = loanDataService.selectListByPage(condition);
         if(page != null){
             List<ApiLoanData> list = page.getList();
@@ -69,13 +67,12 @@ public class ApiIndexController extends ApiBaseController {
 
     /**
      * 获取banner
-     *
-     * @param token
      * @param bussinessType
      * @return
      */
     @PostMapping(value = "/banner")
-    public ApiRichResult banner(@RequestHeader("request_token") String token, @RequestParam("bussinessType") String bussinessType, HttpServletRequest request) {
+//    public ApiRichResult banner(@RequestHeader("request_token") String token, @RequestParam("bussinessType") String bussinessType, HttpServletRequest request) {
+    public ApiRichResult banner(@RequestParam("bussinessType") String bussinessType, HttpServletRequest request) {
         ApiRichResult result = new ApiRichResult();
         List<ApiBanner> list = this.bannerService.selectByBussinessTypeApi(bussinessType);
 //        String url = "http://" + request.getLocalAddr() + ":" + request.getServerPort();
@@ -91,11 +88,10 @@ public class ApiIndexController extends ApiBaseController {
 
     /**
      * 提示消息
-     * @param token
-     * @return
      */
     @PostMapping(value = "/message")
-    public ApiRichResult message(@RequestHeader("request_token") String token) {
+//    public ApiRichResult message(@RequestHeader("request_token") String token) {
+    public ApiRichResult message(HttpServletRequest request) {
         ApiRichResult result = new ApiRichResult();
         ApiIndexMessage message = indexMessageService.selectIndex();
         result.setSucceed(message, "接口调用成功");

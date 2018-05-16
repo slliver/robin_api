@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * @Description: 用一句话具体描述类的功能
  * @author: slliver
@@ -22,7 +24,8 @@ public class ApiLoanController extends ApiBaseController<ApiLoanData> {
     private ApiLoanDataService loanDataService;
 
     @GetMapping(value = "/detail/{loanPkid}")
-    public ApiRichResult detail(@RequestHeader("request_token") String token, @PathVariable String loanPkid) {
+//    public ApiRichResult detail(@RequestHeader("request_token") String token, @PathVariable String loanPkid) {
+    public ApiRichResult detail(HttpServletRequest request, @PathVariable String loanPkid) {
         ApiRichResult result = new ApiRichResult();
         ApiLoanData data = this.loanDataService.selectLoanDetails(loanPkid);
         result.setSucceed(data, "获取数据成功~");
