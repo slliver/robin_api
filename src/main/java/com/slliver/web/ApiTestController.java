@@ -115,6 +115,7 @@ public class ApiTestController extends ApiBaseController {
         return result;
     }
 
+
     @Autowired
     private IndexMessageService indexMessageService;
 
