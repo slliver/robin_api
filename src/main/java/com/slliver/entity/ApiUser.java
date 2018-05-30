@@ -14,4 +14,24 @@ import javax.persistence.Transient;
 @Table(name = "user")
 public class ApiUser extends User{
 
+    @Transient
+    private String newPassword;
+    @Transient
+    private String confirmPassword;
+
+    public String getNewPassword() {
+        return newPassword;
+    }
+
+    public void setNewPassword(String newPassword) {
+        this.newPassword = newPassword;
+    }
+
+    public String getConfirmPassword() {
+        return confirmPassword;
+    }
+
+    public void setConfirmPassword(String confirmPassword) {
+        this.confirmPassword = confirmPassword;
+    }
 }

@@ -142,7 +142,7 @@
                         <!-- Menu Footer-->
                         <li class="user-footer">
                             <div class="pull-left">
-                                <a href="javascript:void(0);" class="btn btn-default btn-flat">个人设置</a>
+                                <a href="${ctx}/index/profile" class="btn btn-default btn-flat">个人设置</a>
                             </div>
                             <div class="pull-right">
                                 <a href="${ctx}/logout" class="btn btn-default btn-flat">退出登录</a>
