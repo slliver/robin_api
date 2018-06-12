@@ -9,6 +9,6 @@ package com.slliver.common.constant;
 public final class SmsContant {
 
     // 每个用户每天最多获取验证码次数
-    public static final int CODE_MAX_RECEIVE_COUNT = 100;
+    public static final int CODE_MAX_RECEIVE_COUNT = 5;
 
 }
