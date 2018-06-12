@@ -28,6 +28,11 @@ public class ApiLoanController extends ApiBaseController<ApiLoanData> {
     public ApiRichResult detail(HttpServletRequest request, @PathVariable String loanPkid) {
         ApiRichResult result = new ApiRichResult();
         ApiLoanData data = this.loanDataService.selectLoanDetails(loanPkid);
+        if(data != null){
+            if(StringUtils.isNoneBlank(data.getUrl())){
+                data.setUrl(StringEscapeUtils.unescapeHtml4(data.getUrl()));
+            }
+        }
         result.setSucceed(data, "获取数据成功~");
         return result;
     }
