@@ -13,6 +13,8 @@ import com.slliver.entity.ApiLoanData;
 import com.slliver.service.ApiLoanDataService;
 import com.slliver.service.BannerService;
 import com.slliver.service.IndexMessageService;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.web.util.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -56,6 +58,9 @@ public class ApiIndexController extends ApiBaseController {
         if(page != null){
             List<ApiLoanData> list = page.getList();
             for (ApiLoanData loan : list) {
+                if(StringUtils.isNotEmpty(loan.getUrl())){
+                    loan.setUrl(StringEscapeUtils.unescapeHtml4(loan.getUrl()));
+                }
                 loan.setHttpUrl(Constant.SERVER_IMAGE_ADDRESS + "/" + loan.getHttpUrl());
             }
             page.setList(list);

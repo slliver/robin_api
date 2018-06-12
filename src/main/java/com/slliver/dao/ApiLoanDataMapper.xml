@@ -19,6 +19,7 @@
         l.total_apply,
         l.label,
         l.banner_pkid,
+        l.url,
         r.url AS http_url
     FROM
         loan_data l

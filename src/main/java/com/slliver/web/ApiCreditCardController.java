@@ -8,6 +8,8 @@ import com.slliver.common.paging.PageWapper;
 import com.slliver.entity.ApiCreditCard;
 import com.slliver.entity.ApiLoanData;
 import com.slliver.service.ApiCreditCardService;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -40,6 +42,9 @@ public class ApiCreditCardController extends ApiBaseController<ApiCreditCard> {
         if (page != null) {
             List<ApiCreditCard> list = page.getList();
             for (ApiCreditCard card : list) {
+                if(StringUtils.isNotEmpty(card.getUrl())){
+                    card.setUrl(StringEscapeUtils.unescapeHtml4(card.getUrl()));
+                }
                 card.setHttpUrl(Constant.SERVER_IMAGE_ADDRESS + "/" + card.getHttpUrl());
             }
             page.setList(list);
