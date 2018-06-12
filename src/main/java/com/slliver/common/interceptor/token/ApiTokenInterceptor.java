@@ -101,6 +101,7 @@ public class ApiTokenInterceptor extends HandlerInterceptorAdapter {
         }
         **/
 
+        request.setAttribute(Constant.REQUEST_TOKEN, token);
         // 验证通过
         return true;
     }
@@ -143,7 +144,13 @@ public class ApiTokenInterceptor extends HandlerInterceptorAdapter {
             logger.info(headername + ": == >> " + request.getHeader(headername));
         }
 
-        System.out.println("request token is === >>> " + token);
+        if(StringUtils.isBlank(token)){
+            // 如果请求头中没有token参数，从传入的参数中获取
+            // 获取请求参数中是否含有token元素
+            token = request.getParameter(Constant.REQUEST_TOKEN);
+        }
+
+        logger.info("request token is === >>> " + token);
         return token;
     }
 
