@@ -4,6 +4,8 @@ import com.slliver.base.controller.ApiBaseController;
 import com.slliver.common.domain.ApiRichResult;
 import com.slliver.entity.ApiLoanData;
 import com.slliver.service.ApiLoanDataService;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
